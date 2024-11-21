@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userbe
+  namespace: sxkj-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userbe
+      tier: backend
+  #strategy:
+  #  type: RollingUpdate
+  #  rollingUpdate:
+  #   maxUnavailable: 1
+  #   maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: userbe
+        tier: backend
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: userbe
+        image: docker-inf-sa.skiffenergy.com/sxkj/userbe:0.0.1
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: userbe
+        ports:
+        - containerPort: 10001
+          name: http
+        readinessProbe:
+        #2xx/3xx success 4xx/5xx fail
+          httpGet:
+            path: 'actuator/health'
+            port: 10001
+            scheme: HTTP
+          initialDelaySeconds: 30
+          #容器启动后要等待多少秒后才启动启动、存活和就绪探针， 默认是 0 秒，最小值是 0。
+          timeoutSeconds: 3
+          #探测的超时后等待多少秒。默认值是 1 秒。最小值是 1。
+          periodSeconds: 6
+          #执行探测的时间间隔（单位是秒）。默认是 10 秒。最小值是 1。
+          failureThreshold: 5
+          #三次失败便为失败并且从svc中摘除，Ready 为false
+          successThreshold: 1
+          #最小成功次数 一次成为便为成功        
+#        resources:
+#          requests:
+#            memory: "2Gi"
+#            cpu: "100m"
+#          limits:
+#            memory: "2Gi"
+#            cpu: "1"

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: userbe
+  namespace: sxkj-dev
+data:
+  TZ: 'Asia/Shanghai'
+
+  NACOS_DISCOV_ADDR: "172.96.2.20:8848"
+  NACOS_USER: ""
+  NACOS_PASSWD: ""
+  NACOS_DISCOV_NS: "sxcn"
+  NACOS_DISCOV_GROUP: "sxcn"
+  MYSQL_ADDR: "10.128.1.56:3306"
+  MYSQL_USER: "nh"
+  MYSQL_PASSWD: "R00t@1298"
+  LOG_DIR: "./log"
+  MYSQL_DS_MX_POOL_SIZE: "200"
+  MYSQL_DS_CONN_TIMEOUT: "10000"
+  DEPLOY_ENV: "dev"
+  PROFILE_ENV: "dev"
+  CUSTOMER_IDENTIFIER: "sxkj"
+  JAVA_OPTS: "-Xms1024m -Xmx1024m -Xmn800m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=./logs --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED"
+  APP_OPTS: "--server.port=10001 --spring.profiles.active=dev"

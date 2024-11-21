@@ -1,0 +1,21 @@
+FROM docker-inf-sa.skiffenergy.com/debian:bullseye-20240110
+##能源局转用
+
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+COPY sources.list /etc/apt/sources.list
+COPY run.sh /root/deploy/run.sh
+
+RUN apt update
+
+RUN  apt -y install unzip wget curl telnet nc iputils-ping sysstat procps top iftop vim locales \
+&&  wget https://release.skiffenergy.com/pkg/tcli.gz \
+ && gunzip tcli.gz \
+  && chmod +x tcli \
+  && mv tcli /usr/bin/  \
+  && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \ 
+  && locale-gen 
+ENV LANG en_US.UTF-8  
+ENV LC_ALL=en_US.UTF-8 
+
+CMD [ "sh" , "run.sh" ]

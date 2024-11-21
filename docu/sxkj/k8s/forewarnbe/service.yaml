@@ -1,0 +1,18 @@
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forewarnbe
+  namespace: sxkj-dev
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 10001
+    protocol: TCP
+    targetPort: 10001
+  selector:
+    app: forewarnbe
+    tier: backend
+

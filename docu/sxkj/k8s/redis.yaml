@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: nacos-dev
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      name: redis
+      targetPort: 6379
+  selector:
+    app: redis
+
+---
+#Deployment- Pod
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: nacos-dev
+spec:
+  serviceName: redis
+  selector:
+    matchLabels:
+      app: redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: redis
+        image: docker-inf-sa.skiffenergy.com/docker.io/redis:7.2.4
+        imagePullPolicy: IfNotPresent
+        command:
+          - "sh"
+          - "-c"
+          - "redis-server /home/redis.conf"
+        ports:
+          - containerPort: 6379
+            name: redis
+        volumeMounts:
+        - name: redis
+          mountPath: /home
+          #subPath: redis.conf
+      volumes:
+      - name: redis
+        configMap:
+          name: redis
+      - name: nh
+        hostPath:
+          path: /data/redis
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis
+  namespace: nacos-dev
+data:
+  redis.conf: |-
+    port 6379
+    bind 0.0.0.0
+    appendonly yes
+    daemonize no
+    requirepass X/)$Who|j9o2)_Oq
