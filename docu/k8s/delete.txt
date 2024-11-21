@@ -1,0 +1,52 @@
+清理k8s
+1.停止服务
+Systemctl stop kubelet
+Ssystemctl stop docker
+如果有以下问题将 docker.socket停止
+Warning: Stopping docker.service, but it can still be activated by:  docker.socket
+Ssystemctl stop etcd
+2.强制重置集群
+Kubeadm reset -f
+3.删除相关的目录
+modprobe -r ipip
+lsmod
+rm -rf ~/.kube/
+rm -rf /etc/kubernetes/
+rm -rf /etc/systemd/system/kubelet.service.d
+rm -rf /etc/systemd/system/kubelet.service
+rm -rf /usr/bin/kube*
+rm -rf /etc/cni
+rm -rf /opt/cni
+rm -rf /var/lib/etcd
+rm -rf /var/etcd
+4.卸载k8s相关程序
+Apt-get -y remove kube*
+
+
+清理docker
+1.删除所有的容器
+Docker rm -f $(docker ps -qa )
+停止服务
+Systemctl stop docker
+卸载docker 源
+ apt-get  remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-selinux \
+                  docker-engine-selinux \
+                  docker-engine
+清理ceph
+停止服务
+systemctl stop ceph.target
+卸载ceph包
+apt-get remove ceph-common ceph-mon ceph-osd
+删除ceph配置文件
+rm -rf /etc/ceph/*
+rm -rf /var/lib/ceph/*
+rm -rf /var/log/ceph/*
+rm -rf /var/run/ceph/*
++4774

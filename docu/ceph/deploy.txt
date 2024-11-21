@@ -1,0 +1,357 @@
+1.安装docker：
+离线安装docker
+2 将以下内容复制到服务器上
+Vim cephadm +4774
+[图片]
+需要的镜像
+ddc0730e7fae quay.io/cephcsi/cephcsi:canary 1.58GB
+4ab832e8228c registry.aliyuncs.com/google_containers/csi-snapshotter:v6.3.3 62.7MB
+$b1c7089bd1e4 registry.aliyuncs.com/google_containers/csi-provisioner:v3.6.3 66.7MB
+971a158af3ef registry.aliyuncs.com/google_containers/csi-attacher:v4.4.3 62.3MB
+c3ff9d54a961 registry.aliyuncs.com/google_containers/csi-resizer:v1.9.3 62.9MB
+93815eb07e18 registry.aliyuncs.com/google_containers/csi-node-driver-registrar:v2.9.3 21.8MB
+0dc86fe0f22e flannel/flannel:v0.24.0 73.5MB
+1443a367b16d registry.aliyuncs.com/google_containers/kube-apiserver:v1.29.0 127MB
+7ace497ddb8e registry.aliyuncs.com/google_containers/kube-scheduler:v1.29.0 59.5MB
+0824682bcdc8 registry.aliyuncs.com/google_containers/kube-controller-manager:v1.29.0 122MB
+98262743b26f registry.aliyuncs.com/google_containers/kube-proxy:v1.29.0 82.2MB
+$dc2bc1663786 quay.io/ceph/ceph:v18 1.26GB
+$954c08fa6188 quay.io/ceph/ceph-grafana:9.4.7 633MB
+$35d002bc4cbf ghcr.io/kube-vip/kube-vip:v0.6.4 45.2MB
+a0eed15eed44 registry.aliyuncs.com/google_containers/etcd:3.5.10-0 148MB
+cbb01a7bd410 registry.aliyuncs.com/google_containers/coredns:v1.11.1 59.8MB
+f151dab7a111 nacos/nacos-server:v2.2.3 814MB
+$a07b618ecd1d quay.io/prometheus/prometheus:v2.43.0 234MB
+$ead0a4a53df8 registry.aliyuncs.com/google_containers/coredns:v1.10.1 53.6MB
+$c8568f914cd2 quay.io/prometheus/alertmanager:v0.25.0 65.1MB
+$0da6a335fe13 quay.io/prometheus/node-exporter:v1.5.0 22.5MB
+e6f181688397 registry.aliyuncs.com/google_containers/pause:3.9 744kB
+$50fe74b50e0d nginx:1.20.2 141MB
+$ad59e82b53c1 plndr/kube-vip:v0.3.8 41.7MB
+$ad59e82b53c1 ghcr.io/kube-vip/kube-vip:v0.3.8 41.7MB
+
+暂时无法在飞书文档外展示此内容
+mv cephadm.txt cephadm
+chmod  +x cephadm
+./cephadm add-repo --release quincy
+./cephadm install
+which cephadm #检查cephadm安装是否成功返回值
+/usr/sbin/cephadm 
+ sed -i 's/\r//' cephadm
+引导新群集运行以下命令
+cephadm bootstrap --mon-ip *<mon-ip>*  ##*<mon-ip>*  这里输入一台节点的ip地址
+ --此命令将：
+在本地为新集群创建监视器和管理守护程序 主机。
+为 Ceph 集群生成新的 SSH 密钥并将其添加到根目录 用户的文件。/root/.ssh/authorized_keys
+将公钥的副本写入 。/etc/ceph/ceph.pub
+将最小的配置文件写入 。这 需要文件才能与新群集通信。/etc/ceph/ceph.conf
+编写管理（特权！ 的密钥。client.admin/etc/ceph/ceph.client.admin.keyring
+将标签添加到引导主机。默认情况下，任何主机 有了这个标签，将（也）获得 和 的副本。_admin/etc/ceph/ceph.conf/etc/ceph/ceph.client.admin.keyring 
+启用ceph cli
+./cephadm add-repo --release quincy
+./cephadm install ceph-common
+
+ librbd1 python3-ceph-argparse python3-ceph-common  python3-ceph-common python3-cephfs python3-distutils, python3-prettytable, python3-rados  python3-rbd python3-requests, python3:any libbabeltrace1 libblkid1  libboost-context1.74.0  libboost-filesystem1.74.0  libboost-program-options1.74.0 libboost-thread1.74.0  libc6  libcap-ng0  libcephfs2  libcurl3-gnutls  libexpat1  libfmt9  libgcc-s1 libgoogle-perftools4  libicu72  libkeyutils1  libldap-2.5-0  liblua5.3-0 libncurses6  liboath0  librabbitmq4  librados2  libradosstriper1  libssl3  libstdc++6  libtinfo6  libudev1 
+
+部署OSD
+如果满足以下所有_条件_，则存储设备被视为可用：
+- 设备必须没有分区。
+- 设备不得具有任何 LVM 状态。
+- 不得安装设备。
+- 设备不能包含文件系统。
+- 设备不得包含 Ceph BlueStore OSD。
+- 设备必须大于 5 GB。
+Ceph 拒绝在不可用的设备上预配 OSD。为保证能成功添加osd，我刚才在每个node上新加了一块磁盘 初始化的时候可以先不要对所有盘进行初始化
+从特定主机上的特定设备创建OSD
+ceph orch daemon add osd node1:/dev/sdb ##node1映射的域名 /dev/sdb 要建设OSD的盘
+docker images ##查看用到了哪些镜像 用save 导出
+docker save -o ceph.tar quay.io/ceph/ceph:v15 
+apt-get install dpkg-dev -y #解决依赖关系
+dpkg-scanpackages /offlinePackage/ /dev/null |gzip    >/offlinePackage/Packages.gz 
+###整个命令的作用就是扫描 /offlinePackage/ 目录下的所有 Debian 软件包，生成一个包含这些软件包元数据的文本文件，压缩这个文件，然后把压缩后的文件保存到 /offlinePackage/Packages.gz 中。
+tar zcvf offlinePackage.tar.gz /offlinePackage/
+开始离线安装ceph
+配置hosts解析
+cat >> /etc/hosts <<EOF
+192.168.140.128 phy128
+192.168.140.129 phy129
+192.168.140.130 phy130
+192.168.140.131 phy131
+192.168.140.132 phy132
+EOF
+设置主机名
+hostnamectl set-hostname phy128
+hostnamectl set-hostname phy129
+hostnamectl set-hostname phy130
+hostnamectl set-hostname phy131
+hostnamectl set-hostname phy132
+配置本地源
+这里将ceph、docker、
+tar zxvf ceph.packer -C /
+mv /etc/apt/sources.list /etc/apt/sources.list.bak
+vi /etc/apt/sources.list
+deb file:/// ceph.packer/
+apt update
+安装docker
+cd /ceph.packer/archives
+dpkg -i containerd.io_1.4.11-1_amd64.deb 
+dpkg -i docker-ce-cli_5%3a20.10.10~3-0~ubuntu-focal_amd64.deb
+dpkg -i docker-ce-rootless-extras_5%3a20.10.10~3-0~ubuntu-focal_amd64.deb
+dpkg -i docker-ce_5%3a20.10.10~3-0~ubuntu-focal_amd64.deb
+systemctl start docker
+systemctl enable docker
+导入docker镜像
+两种方式都可以
+docker load -i node-exporter.tar 
+docker load  < node-exporter.tar 
+安装ceph
+chmod +x cephadm
+cp cephadm /usr/bin/
+apt install cephadm --allow-unauthenticated
+#如果有报错，先执行 apt --fix-broken install
+引导新集群
+cephadm bootstrap --mon-ip 192.168.174.128#phy10 #这里在一台服务器输入，输入服务器的IP
+cephadm bootstrap 命令将会进行以下操作：
+为本地主机上的新群集创建monitor和manager守护程序。
+为 Ceph 群集生成新的 SSH 密钥，并将其添加到root用户的文件/root/.ssh/authorized_keys
+将与新群集通信所需的最小配置文件保存到 /etc/ceph/ceph.conf
+将client.admin管理（特权！）密钥的副本写入/etc/ceph/ceph.client.admin.keyring
+将公钥的副本写入/etc/ceph/ceph.pub
+安装ceph #镜像是区分菜谱架构的
+cd /ceph.packer/archives
+dpkg -i *.deb #执行此命令会将我们之前缓存的包都安装完
+
+
+podman run --privileged -d --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry --restart=always registry:2
+
+sealos pull quay.io/ceph/ceph:v17.2
+
+podman run: 这是运行一个新容器的命令。
+--privileged: 这使得容器内的进程几乎拥有宿主机上的所有能力。换句话说，容器内的进程可以以 root 用户身份执行几乎任何操作。这个选项通常用于需要执行一些需要特殊权限的任务的容器。
+-d: 这意味着容器将在后台以分离模式运行。也就是说，你不会看到容器的输出，它会作为一个后台进程运行。
+--name registry: 这给容器指定了一个名称，即 registry。通过这个名字，你可以更容易地引用和管理这个容器。
+-p 5000:5000: 这将宿主机的端口 5000 映射到容器的端口 5000。这意味着当你访问宿主机的 5000 端口时，实际上你是在访问容器的 5000 端口。这在容器运行网络服务时非常有用，这样你就可以从宿主机或外部网络访问该服务。
+-v /var/lib/registry:/var/lib/registry: 这是一个卷挂载。它将宿主机的 /var/lib/registry 目录挂载到容器的 /var/lib/registry 目录。这意味着容器对这个目录的更改会反映到宿主机上，反之亦然。这常用于持久化数据，确保即使容器被删除或重新启动，数据也不会丢失。
+--restart=always: 这意味着无论容器以何种方式退出，它都会自动重新启动。这对于需要持续运行的服务（如容器注册表）非常有用。
+registry:2: 这是要运行的容器的镜像名称和标签。在这个例子中，你正在运行一个名为 registry 的镜像，标签为 2。这通常表示你正在运行该镜像的第二个版本
+配置podman加速器和私有仓库
+vi /etc/containers/registries.conf
+unqualified-search-registries = ["docker.io","quay.io"]
+
+#[[registry]]
+#prefix = "docker.io/labring"
+#location = "docker.io/labring"
+
+#[[registry.mirror]]
+#location = "hub-mirror.c.163.com"
+
+#[[registry.mirror]]
+#location = "mirror.baidubce.com"
+
+[[registry]]
+prefix = "192.168.140.136:4000"
+location = "192.168.140.136:4000"
+insecure = true
+配置sealos加速器
+ cat /etc/containerd/certs.d/sealos.hub\:5000/hosts.toml 
+
+server = "http://sealos.hub:5000"
+
+[host."http://sealos.hub:5000"]
+  capabilities = ["pull", "resolve", "push"]
+  skip_verify = true
+[host."https://reg-mirror.qiniu.com"]
+  capabilities = ["pull", "resolve"]
+[host."https://registry.docker-cn.com"]
+  capabilities = ["pull", "resolve"]
+[host."http://hub-mirror.c.163.com"]
+  capabilities = ["pull", "resolve"]
+本地写入文件
+ vim initial-ceph.conf 
+[mgr]
+mgr/cephadm/container_image_prometheus = 192.168.140.136:4000/prometheus
+mgr/cephadm/container_image_node_exporter = 192.168.140.136:4000/node_exporter
+mgr/cephadm/container_image_grafana = 192.168.140.136:4000/grafana
+mgr/cephadm/container_image_alertmanager = 192.168.140.136:400/alertmanger
+修改镜像名称并推送的仓库中去registry:2
+podman tag quay.io/ceph/ceph:v17.2 192.168.140.136:4000/ceph/ceph:v17.2
+podman   push 192.168.140.136:4000/ceph/ceph:v17.2
+执行会去这里拉去镜像
+./cephadm --image 10.8.1.214:4000/ceph/ceph:v17.2 bootstrap --mon-ip 10.8.1.214
+安装ceph命令
+wget -q -O- 'https://mirrors.aliyun.com/ceph/keys/release.asc' | sudo apt-key add -
+ apt-add-repository 'deb https://mirrors.aliyun.com/ceph/debian-octopus/ buster main'
+ apt update
+ 这里会报错，把 /etc/apt/source.list 文件注释的那行打开
+ ./cephadm add-repo --release quincy #确定你cephadm是什么版本
+ ./cephadm install
+  apt install -y ceph-common 这里就有ceph的命令了
+  
+[图片]
+
+添加主机到集群将公钥添加到新主机
+ssh-copy-id -f -i /etc/ceph/ceph.pub phy129
+ssh-copy-id -f -i /etc/ceph/ceph.pub phy130
+ssh-copy-id -f -i /etc/ceph/ceph.pub phy131
+ssh-copy-id -f -i /etc/ceph/ceph.pub phy132
+添加节点后是集群的一部分需要告诉他
+ceph orch host add phy129
+Added host 'phy22' ##返回结果
+ceph orch host add phy130
+Added host 'phy130' ##返回结果
+ceph orch host add phy131
+Added host 'phy131' ##返回结果
+ceph orch host add phy132
+Added host 'phy132'##返回结果
+ceph orch host label add phy129 _admin  加入集群
+ceph orch host label add phy130 _admin  加入集群
+ceph orch host label add phy131 _admin  加入集群
+ceph orch host label add phy132 _admin  加入集群
+添加主机会自动扩展mon和mgr节点
+部署OSD
+ceph orch device ls #查看集群中的存储设备清单
+从特定主机上的设备创建OSD
+ceph orch daemon add osd phy128:/dev/sdb
+ceph orch daemon add osd phy128:/dev/sdc
+ceph orch daemon add osd phy128:/dev/sdd
+ceph orch daemon add osd phy129:/dev/sde
+ceph orch daemon add osd phy129:/dev/sdd
+ceph orch daemon add osd phy130:/dev/sdb
+ceph orch daemon add osd phy130:/dev/sdc
+ceph orch daemon add osd phy130:/dev/sde
+ceph orch daemon add osd phy131:/dev/sdb
+ceph orch daemon add osd phy131:/dev/sdc
+ceph orch daemon add osd phy132:/dev/sdd
+ceph orch daemon add osd phy132:/dev/sde
+其他节点的ceph配置
+mkdir /etc/ceph
+mkdir /etc/ceph
+cd /etc/ceph
+scp ceph* node2:/etc/ceph
+scp ceph* node3:/etc/ceph
+部署MDS
+使用 CephFS 文件系统需要一个或多个 MDS 守护程序。如果使用新的ceph fs卷接口来创建新文件系统，则会自动创建这些文件 部署元数据服务器：
+ceph orch apply mds *<fs-name>* --placement="*<num-daemons>* [*<host1>* ...]"
+ceph orch apply mds cephfs --placement="phy128,phy129,phy130,phy131,phy132" #用逗号分割
+cephfs需要两个 Pools，cephfs-data 和 cephfs-metadata,分别存储文件数据和文件元数据
+phy10
+ ceph osd pool create cephfs_data 64 64
+ 
+ceph osd pool create cephfs_metadata 64 64
+
+创建一个 CephFS, 名字为 cephfs
+ ceph fs new cephfs cephfs_metadata cephfs_data
+ ceph orch apply mds cephfs --placement="5 phy128 phy129 phy130 phy131 phy132"
+Scheduled mds.cephfs update...
+验证至少有一个MDS已经进入active状态，默认情况下，ceph只支持一个活跃的MDS，其他的作为备用MDS
+ceph fs status cephfs
+先再fstab中加入这个再进行挂载
+vim /etc/fstab
+phy128:6789,phy129:6789,phy130:6789,phy131:6789,phy132:6789:/ /mnt/cephfs ceph mds_namespace=cephfs,name=admin,noatime,_netdev 0 2
+
+mount -t  phy128:6789,phy129:6789,phy130:6789,phy131:6789,phy132:6789:/ /mnt/cephfs/ -o mds_namespace=cephfs,name=admin,secretfile=/etc/ceph/admin.key,noatime,_netdev
+
+部署RGW
+ceph orch apply rgw myrealm myzone --placement="5 phy128 phy129 phy130 phy131 phy132"
+创建用户
+radosgw-admin user create --uid="sxkj" --display-name="sxkj" #修改用户名
+{
+    "user_id": "pcny",
+    "display_name": "pcny",
+    "email": "",
+    "suspended": 0,
+    "max_buckets": 1000,
+    "subusers": [],
+    "keys": [
+        {
+            "user": "pcny", 
+            "access_key": "T7BJ886LXYTIA8OJN6MH", #保存好
+            "secret_key": "gqxY2yY20nx0EVV3vuVxm8COc7FwjCIvsY0ENgrz" #保存好
+        }
+    ],
+    "swift_keys": [],
+    "caps": [],
+    "op_mask": "read, write, delete",
+    "default_placement": "",
+    "default_storage_class": "",
+    "placement_tags": [],
+    "bucket_quota": {
+        "enabled": false,
+        "check_on_raw": false,
+        "max_size": -1,
+        "max_size_kb": 0,
+        "max_objects": -1
+    },
+    "user_quota": {
+        "enabled": false,
+        "check_on_raw": false,
+        "max_size": -1,
+        "max_size_kb": 0,
+        "max_objects": -1
+    },
+    "temp_url_keys": [],
+    "type": "rgw",
+    "mfa_ids": []
+}
+安装s3cmd
+dpkg -i s3cmd  #将缓存的包都安装 
+
+apt install -y s3cmd
+            "user": "sxkj",
+            "access_key": "OGHB2OKHXLDF1C4T4X4C",
+            "secret_key": "BgwmcyhVyYBxOwE2L7uIFiojKZcYkU7bF1siLYJE"
+
+配置s3cmd
+s3cmd --configure
+
+Enter new values or accept defaults in brackets with Enter.
+Refer to user manual for detailed description of all options.
+
+Access key and Secret key are your identifiers for Amazon S3. Leave them empty for using the env variables.
+Access Key [9N1QNJ1SMB5G6FPNFCPQ]: #刚才的Access Key
+Secret Key [E6Q8FBz5x7W6Hz9AfvWcUOesgHGKVfohvKISCcYE]: #刚才的Secret Key
+Default Region [US]: #默认回车
+
+Use "s3.amazonaws.com" for S3 Endpoint and not modify it to the target Amazon S3.
+S3 Endpoint [192.168.64.128:80]: 设置访问s3用的地址和端口，可以写域名，端口自定义
+
+Use "%(bucket)s.s3.amazonaws.com" to the target Amazon S3. "%(bucket)s" and "%(location)s" vars can be used
+if the target S3 system supports dns based buckets.
+DNS-style bucket+hostname:port template for accessing a bucket [192.168.64.128:80/%(bucket)s]: 
+
+Encryption password is used to protect your files from reading
+by unauthorized persons while in transfer to S3
+Encryption password: 
+Path to GPG program [/usr/bin/gpg]: 
+
+When using secure HTTPS protocol all communication with Amazon S3
+servers is protected from 3rd party eavesdropping. This method is
+slower than plain HTTP, and can only be proxied with Python 2.7 or newer
+Use HTTPS protocol [No]: no
+
+On some networks all internet access must go through a HTTP proxy.
+Try setting it here if you can't connect to S3 directly
+HTTP Proxy server name: 
+
+New settings:
+  Access Key: 9N1QNJ1SMB5G6FPNFCPQ
+  Secret Key: E6Q8FBz5x7W6Hz9AfvWcUOesgHGKVfohvKISCcYE
+  Default Region: US
+  S3 Endpoint: 192.168.64.128:80
+  DNS-style bucket+hostname:port template for accessing a bucket: 192.168.64.128:80/%(bucket)s
+  Encryption password: 
+  Path to GPG program: /usr/bin/gpg
+  Use HTTPS protocol: False
+  HTTP Proxy server name: 
+  HTTP Proxy server port: 0
+
+Test access with supplied credentials? [Y/n]  n
+Please wait, attempting to list all buckets...
+Success. Your access key and secret key worked fine :-)
+
+Now verifying that encryption works...
+Not configured. Never mind.
+
+Save settings? [y/N] y
+
+

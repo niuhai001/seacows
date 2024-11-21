@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+	<property>
+		<name>dfs.nameservices</name>
+		<value>ZHDFS</value>
+	</property>
+<!--
+	<property>
+		<name>dfs.ha.namenodes.ZHDFS</name>
+		<value>nn1,nn2</value>
+	</property>
+-->
+	<property>
+		<name>dfs.namenode.rpc-address.ZHDFS.nn1</name>
+		<value>hadoop2:2220</value>
+	</property>
+<!--
+	<property>
+		<name>dfs.namenode.rpc-address.ZHDFS.nn2</name>
+		<value>hadoop3:2220</value>
+	</property>
+-->
+	<property>
+		<name>dfs.namenode.http-address.ZHDFS.nn1</name>
+		<value>hadoop2:2270</value>
+	</property>
+<!--
+	<property>
+		<name>dfs.namenode.http-address.ZHDFS.nn2</name>
+		<value>hadoop3:2270</value>
+	</property>
+-->
+	<property>
+		<name>dfs.namenode.name.dir</name>
+		<value>/home/hadoop/meta/nn</value>
+	</property>
+
+	<property>
+		<name>dfs.namenode.name.dir.nn1</name>
+		<value>/home/hadoop/meta/nn</value>
+	</property>
+
+	<property>
+		<name>dfs.namenode.name.dir.nn2</name>
+		<value>/home/hadoop/meta/nn</value>
+	</property>
+
+	<property>
+		<name>dfs.blocksize</name>
+		<value>134217728</value>
+	</property>
+
+	<property>
+		<name>dfs.datanode.data.dir</name>
+		<value>/home/hadoop/data/hdfs/d0</value>
+	</property>
+        
+        <property>
+                <name>dfs.namenode.rpc.max.response.size</name>
+                <value>1048576</value>
+        </property>
+
+	<property>
+		<name>dfs.replication</name>
+		<value>3</value>
+	</property>
+
+	<property>
+		<name>dfs.replication.max</name>
+		<value>512</value>
+	</property>
+	<property>
+		<name>dfs.namenode.shared.edits.dir</name>
+		<value>qjournal://hadoop0:2285;hadoop1:2285;hadoop4:2285/ZHDFS</value>
+	</property>
+
+	<property>
+		<name>dfs.client.failover.proxy.provider.ZHDFS</name>
+		<value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+	</property>
+
+	<property>
+		<name>dfs.ha.fencing.methods</name>
+		<value>sshfence</value>
+	</property>
+
+	<property>
+		<name>fs.defaultFS</name>
+		<value>hdfs://hadoop-master:2220</value>
+	</property>
+
+	<property>
+		<name>dfs.journalnode.edits.dir</name>
+		<value>/home/hadoop/meta/jn</value>
+	</property>
+
+	<property>
+		<name>dfs.journalnode.rpc-address</name>
+		<value>0.0.0.0:2285</value>
+	</property>
+
+	<property>
+		<name>dfs.journalnode.http-address</name>
+		<value>0.0.0.0:2240</value>
+	</property>
+
+	<property>
+		<name>dfs.journalnode.https-address</name>
+		<value>0.0.0.0:2241</value>
+	</property>
+
+	<property>
+		<name>dfs.ha.nn.not-become-active-in-safemode</name>
+		<value>false</value>
+	</property>
+
+	<property>
+		<name>dfs.ha.automatic-failover.enabled</name>
+		<value>false</value>
+	</property>
+<!--
+	<property>
+		<name>ha.zookeeper.quorum</name>
+		<value>hadoop0:2281,hadoop1:2281,hadoop2:2281,hadoop3:2281,hadoop4:2281</value>
+	</property>
+-->
+</configuration>
